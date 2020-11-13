@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Ponte del Diavolo</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+		<script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="./css/ponte.css" >
+
+	</head>
+	<body>
+
+		<div class="container">
+			<div class="row">
+				<main class = "col-12 col-md-11 col-xl-16">
+					<div id = "ponte_del_diavolo">
+						<div class="row">
+							<div class = "col-12 col-md-7 col-lg-7 col-xl-7 offset-md-2 offset-lg-2 offset-xl-2">
+								<div class="row">
+									<div class = "col-11 offset-1 coor_top">
+									</div>
+								</div>
+								<div class="row">
+									<div class = "col-1 coor_left_right">
+									</div>
+									<div id = "board" class = "col-11">
+									</div>
+								</div>
+								<div class="row">
+									<div class = "col-11 offset-1 coor_bottom">
+									</div>
+								</div>
+							</div>
+							<div id = "score" class = "col-12 col-md-3 col-lg-3 col-xl-3">
+								<div class = "btn_block">
+									<div class = "row" id = "move_control">
+										<div class = "col" >
+											<button class ="btn_n" id="back"><<</button>
+										</div>
+										<div class = "col"  id = "move_pointer">
+										</div>
+										<div class = "col">
+											<button class ="btn_n" id="forward">>></button>
+										</div>
+									</div>
+									<button class = "btn_n" id = "btnnew">New</button>	
+								</div>
+								<div class = "row moves" id = "moves_block">
+									<div class = "col-6 col-md-6 col-lg-6 col-xl-6 col-sm-1 move">
+									</div>
+								</div>
+								<div class = "row points" id = "vic_points">
+									<div class = "col-6 white" id = "white_p">
+										0
+									</div>
+									<div class = "col-6 black" id = "black_p">
+										0
+									</div>
+								</div>
+							</div>
+						</main>
+			</div>
+		</div>
+
+		<script type="module">
+			import {Init} from './js/init.js';
+			var board = new Init();
+			board.draw();
+		</script>
+	</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
