@@ -285,14 +285,14 @@ export function Init() {
 				let p0 = p[x0][y0].value,
 					p1 = p[x1][y1].value;
 
-				// КЛЕТКА НЕ В ЦВЕТ ХОДА 
+				// CELL OF THE WRONG COLOR
 				if (((p0 == 1 || p1 == 1) && (turn == 2)) || ((p0 == 2 || p1 == 2) && (turn == 1))) {
 					a_m[x0][y0][x1][y1] = false;
 					a_m[x1][y1][x0][y0] = false;
 					continue;
 				}
 
-				// РАЗНЫЕ ЧЕРНЫЕ И БЕЛЫЕ
+				// DIFFERENT COLOR FILTER
 				if ((p0 == 1 || p0 == 2 || p1 == 1 || p1 == 2) && p1 != p0 ) {
 					a_m[x0][y0][x1][y1] = false;
 					a_m[x1][y1][x0][y0] = false;
@@ -303,7 +303,7 @@ export function Init() {
 					a_m[x1][y1][x0][y0] = false;
 					continue;
 				}
-				/* ============================ ОСТРОВА
+				/* ============================ ISLANDS
 				==================================== */
 				let t2 = white ? 4 : 5; 
 				if (p0 == t2 || p1 == t2 || p0 == 6 || p1 == 6) { 
@@ -542,7 +542,7 @@ export function Init() {
 		let f0 = this.field[this.selected_cells[0][0]][this.selected_cells[0][1]],
 			f1 = this.field[this.selected_cells[1][0]][this.selected_cells[1][1]];
 
-		console.log('--------------' + this.turn + '----------------');
+		//console.log('--------------' + this.turn + '----------------');
 		
 		f0.select();f1.select();
 		if ((f1.value == 1 || f1.value == 2) && f1.value == f0.value) {
@@ -583,7 +583,7 @@ export function Init() {
 				(1 + +this.selected_cells[0][1]) + " " + 'abcdefjklmn'[this.selected_cells[1][0]] + (1 + +this.selected_cells[1][1]);
 			let t = this.turn;
 			this.history[this.turn].button.id = this.turn;
-			this.history[this.turn].button.addEventListener('click', this.load_posititon);
+			this.history[this.turn].button.addEventListener('click', this.load_position);
 			this.moves_block.insertBefore(this.history[this.turn].button, this.base_move);
 
 		this.turn++;
@@ -726,25 +726,14 @@ export function Init() {
 		if (this.turn > 0) {
 			let ba = this.moves_block.querySelectorAll('.move');
 			for (var i = 0 ; i < this.turn; i++) {
-				if (walk) {
-					if (ba[i].classList.contains('grey')) {
-						ba[i].classList.remove('grey');
-					}
-				} else {
-					if (ba[i].classList.contains('close')) {
-						ba[i].classList.remove('close');
-					}
-				}
+				if (ba[i].classList.contains('grey')) { ba[i].classList.remove('grey'); }
+				if (ba[i].classList.contains('close')) { ba[i].classList.remove('close'); }
 			}
 			for (var i = this.turn; i < ba.length; i++) {
 				if (walk) {
-					if (!ba[i].classList.contains('grey')) {
-						ba[i].classList.add('grey');
-					}
+					if (!ba[i].classList.contains('grey')) { ba[i].classList.add('grey'); }
 				} else {
-					if (!ba[i].classList.contains('close')) {
-						ba[i].classList.add('close');
-					}
+					if (!ba[i].classList.contains('close')) { ba[i].classList.add('close'); }
 				}
 			}
 			this.base_move.classList.remove('close');
