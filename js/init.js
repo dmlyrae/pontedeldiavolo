@@ -72,7 +72,6 @@ export function Init() {
 			this.list.appendChild(div_in_list);
 			div_in_list.addEventListener('click', (event) => {
 				let id = event.target.parentElement.id;
-				console.log(id);
 				if (event.target.classList.contains('remove_icon')) {
 					delete this.archive[id];
 					div_in_list.remove();
@@ -316,7 +315,7 @@ export function Init() {
 		}
 	}
 
-	this.get_allow_moves = function (p, white) {
+	this.get_allow_moves = function (p, white, info) {
 
 		if (typeof p != "object") {return [];}
 		if (typeof p[0] != "object") {return [];}
@@ -535,10 +534,12 @@ export function Init() {
 						});
 					}
 				}
+				// BRIDGES ALLOW
 				if (check) {
 					a_m[x0][y0][x1][y1] = true;
 					a_m[x1][y1][x0][y0] = true;
 					am.push([[x0, y0], [x1, y1]]);
+					if (typeof info != "undefined") console.log('bridge allow ' + info, [[x0, y0], [x1, y1]]);
 					continue;
 				}
 				continue;
@@ -777,12 +778,6 @@ export function Init() {
 				}
 			}
 		}
-		this.islands = this.fi(this.field);
-		this.field = this.set_impassable(this.field, this.islands);
-		this.refresh_allow();
-		let wh = 0 == this.turn % 2;
-		let a = this.get_allow_moves(this.field, !wh);
-		this.allow_moves = a[0];
 		if (clear) {
 			this.history.forEach ((item) => {
 				this.moves_block.removeChild(item.button);
@@ -816,6 +811,13 @@ export function Init() {
 		}
 		this.move_pointer.innerHTML = (this.turn + 1) + " move";
 		this.base_move.innerHTML = (this.history.length + 1) + ". _____";
+
+		this.islands = this.fi(this.field);
+		this.field = this.set_impassable(this.field, this.islands);
+		this.refresh_allow();
+		let wh = 0 == this.turn % 2;
+		let a = this.get_allow_moves(this.field, !wh);
+		this.allow_moves = a[0];
 	}
 
 	this.set_impassable = function (p, is) {
@@ -861,7 +863,6 @@ export function Init() {
 	this.save_party = (event) => {
 		if (typeof event != "undefined") {event.preventDefault();}
 		let party = this.game_name.value;
-		console.log(party);
 		party = party.trim().toLowerCase();
 		let party2 = '';
 		if (party.length > 0) {
@@ -870,7 +871,7 @@ export function Init() {
 					party2 = party2 + party[i];
 				}
 			}
-			party2.trim().replace(/ /gi, '_');
+			party2.trim().replace(/ /g, '_');
 			this.save_dialog.classList.toggle('is_open');
 			this.game_name.value = '';
 			let d = new Date();
@@ -880,7 +881,6 @@ export function Init() {
 			}
 			localStorage.setItem('archive', JSON.stringify(this.archive));
 		}
-		console.log(party2);
 		this.load_archive();
 	}
 	this.find_move = (p, wh) => {
@@ -907,20 +907,21 @@ export function Init() {
 			return pp0;
 		}
 		pos = copy_a(p1);
-		am = this.get_allow_moves(pos, !w);
+		am = this.get_allow_moves(pos, w, 'find move');
 		let pw = copy_a(pos);
 		let max_score = 0;
 		let best = [];
 		let mv = w ? 1 : 2;
 		am[1].forEach ((m) => {
-			if (pw[m[0][0]][m[0][1]] == mv && pw[m[1][0]][m[1][1]] == mv) {
+			if (pw[m[0][0]][m[0][1]].value == mv && pw[m[1][0]][m[1][1]].value == mv) {
 				pw[m[0][0]][m[0][1]].bridge = [m[1][0], m[1][1]];
-				console.log('bridge in searcg best move',[m[1][0], m[1][1]]);
+				pw[m[1][0]][m[1][1]].bridge = [m[0][0], m[0][1]];
 			} else {
 				pw[m[0][0]][m[0][1]].value = mv;
 				pw[m[1][0]][m[1][1]].value = mv;
 			}
 			let fi_arr = this.fi(pw, w);
+			pw = this.set_impassable(pw, fi_arr);
 			let score = this.score(fi_arr, pw, w);
 			if (!(score < max_score)) {
 				max_score = score;
@@ -954,7 +955,6 @@ export function Init() {
 		if (this.save_dialog.classList.contains("is_open")) {return;}
 		if( '123456789'.indexOf(event.key) > -1) {
 			let fm = this.find_move();
-			console.log(fm);
 		}
 	});
 }
