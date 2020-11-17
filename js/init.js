@@ -21,6 +21,7 @@ export function Init() {
 	this.draw_field = SVG().addTo('#board ').size(this.width - 30, this.width);
 	this.allow_moves = [];
 
+
 	this.btn_new = document.querySelector('#btnnew');
 	this.btn_block = document.querySelector('.btn_block');
 	if (window.screen.width > 760) this.btn_block.style = 'padding-top: ' + this.cell_size + ';';
@@ -37,6 +38,71 @@ export function Init() {
 	this.forward = document.querySelector('#forward');
 	this.move_control = document.querySelector('#move_control');
 
+	this.save = document.querySelector('#save');
+	this.load = document.querySelector('#load');
+	this.game_list = document.querySelector('#game_list');
+	this.list = this.game_list.querySelector('.modal-dialog-1');
+
+	this.close_modal = document.querySelectorAll('.close_modal');
+	this.save_dialog = document.querySelector('#save_dialog');
+
+	this.save_form = document.querySelector('#save_form');
+	this.game_name = save_form.querySelector('input');
+	this.saveas = save_form.querySelector('button');
+
+	this.load_archive = () => {
+		if (localStorage.getItem('archive') != null) {
+			this.archive = JSON.parse(localStorage.getItem('archive'));
+		} else {
+			this.archive = {};
+			localStorage.setItem('archive', JSON.stringify(this.archive));
+		}
+		let l = this.list.querySelectorAll('div');
+		l.forEach ((item) => {item.remove();})
+		for (var key in this.archive) {
+			let div_in_list = document.createElement('div');
+			div_in_list.classList.add('row', 'div_in_list');
+			div_in_list.style = `width: ${this.width};` 
+			div_in_list.id = key;
+			div_in_list.innerHTML = `
+				<div class = "col date">${this.archive[key].date}</div>
+				<div class = "col name_game" >${key}</div>
+				<div class = "col-2 remove_icon">del</div>
+			`
+			this.list.appendChild(div_in_list);
+			div_in_list.addEventListener('click', (event) => {
+				let id = event.target.parentElement.id;
+				console.log(id);
+				if (event.target.classList.contains('remove_icon')) {
+					delete this.archive[id];
+					div_in_list.remove();
+					let a = JSON.stringify(this.archive);
+					localStorage.setItem('archive', a);
+				} else {
+					this.history = this.archive[id].history.slice();
+					this.turn = this.history.length;
+					let moves = this.moves_block.querySelectorAll('move');
+					for (i = 0; i < moves.length - 1; i++) {
+						moves[i].remove();
+					}
+					this.history.forEach((item) => {
+						let b_id = item.button_id;
+						let b_HTML = item.button_innerHTML;
+						item.button = this.base_move.cloneNode(false);
+						item.button.id = b_id;
+						item.button.innerHTML = b_HTML;
+						item.button.addEventListener('click', this.load_position);
+						this.moves_block.insertBefore(item.button, this.base_move);
+					});
+					this.load_position(this.turn - 1);
+				}
+				this.game_list.classList.toggle('is_open');
+			})
+		}
+	}
+
+	this.load_archive();
+	
 
 	let coor_top = document.querySelector('.coor_top');
 	coor_top.style = 'height: ' + this.cell_size;
@@ -287,28 +353,20 @@ export function Init() {
 
 				// CELL OF THE WRONG COLOR
 				if (((p0 == 1 || p1 == 1) && (turn == 2)) || ((p0 == 2 || p1 == 2) && (turn == 1))) {
-					a_m[x0][y0][x1][y1] = false;
-					a_m[x1][y1][x0][y0] = false;
 					continue;
 				}
 
 				// DIFFERENT COLOR FILTER
 				if ((p0 == 1 || p0 == 2 || p1 == 1 || p1 == 2) && p1 != p0 ) {
-					a_m[x0][y0][x1][y1] = false;
-					a_m[x1][y1][x0][y0] = false;
 					continue;
 				}
 				if (p0 == 3 || p1 == 3) {
-					a_m[x0][y0][x1][y1] = false;
-					a_m[x1][y1][x0][y0] = false;
 					continue;
 				}
 				/* ============================ ISLANDS
 				==================================== */
 				let t2 = white ? 4 : 5; 
 				if (p0 == t2 || p1 == t2 || p0 == 6 || p1 == 6) { 
-					a_m[x0][y0][x1][y1] = false;
-					a_m[x1][y1][x0][y0] = false;
 					continue;
 				};
 
@@ -408,13 +466,13 @@ export function Init() {
 					ch2 = p1 == 0 || (p1 == 5 || p1 == 4);
 
 				if (ch1 && ch2) {
-					a_m[x0][y0][x1][y1] = true; // На нейтральные можно
+					a_m[x0][y0][x1][y1] = true; // NEUTRAL CELLs
 					a_m[x1][y1][x0][y0] = true;
 					am.push([[x0, y0], [x1, y1]]);
 					continue;
 				}
 
-				/* ============================== МОСТЫ
+				/* ============================ BRIDGES
 				==================================== */
 
 				if (p[x0][y0].bridge.length > 0 || p[x1][y1].bridge.length > 0 ) {
@@ -476,7 +534,7 @@ export function Init() {
 							}
 						});
 					}
-                                                  				}
+				}
 				if (check) {
 					a_m[x0][y0][x1][y1] = true;
 					a_m[x1][y1][x0][y0] = true;
@@ -583,6 +641,8 @@ export function Init() {
 				(1 + +this.selected_cells[0][1]) + " " + 'abcdefjklmn'[this.selected_cells[1][0]] + (1 + +this.selected_cells[1][1]);
 			let t = this.turn;
 			this.history[this.turn].button.id = this.turn;
+			this.history[this.turn]['button_innerHTML'] = this.history[this.turn].button.innerHTML;
+			this.history[this.turn]['button_id'] = t;
 			this.history[this.turn].button.addEventListener('click', this.load_position);
 			this.moves_block.insertBefore(this.history[this.turn].button, this.base_move);
 
@@ -652,30 +712,36 @@ export function Init() {
 	}
 
 	this.load_position = (event) => {
-		let id = event.target.id;
 		let clear = false, pos = [], t = 0, walk = false;
-		if (typeof id == "indefined") {return;}
-		else {
-			if (id == "btnnew") {clear = true;}
+		if (typeof event == "number") {
+			pos = this.history[event].position;
+			walk = false;
+			t = event + 1;
+		} else {
+			let id = event.target.id;
+			if (typeof id == "indefined") {return;}
 			else {
-				if (!isNaN(id)) {
-					if (id == 0) {clear = true;}
-					else {
-						pos = this.history[+id - 1].position;
-						t = this.history[+id].turn;
-					}
-				} else {
-					if (id == "back") {
-						t = this.turn - 2;
-						if (t < 0) {return;}
-						else {pos = this.history[t].position; walk = true;}
-						t++;
-					}
-					if (id == "forward") {
-						t = this.turn;
-						if (t > this.history.length -1) {return;}
-						else {pos = this.history[t].position; walk = true;}
-						t++;
+				if (id == "btnnew") {clear = true;}
+				else {
+					if (!isNaN(id)) {
+						if (id == 0) {clear = true;}
+						else {
+							pos = this.history[+id - 1].position;
+							t = this.history[+id].turn;
+						}
+					} else {
+						if (id == "back") {
+							t = this.turn - 2;
+							if (t < 0) {return;}
+							else {pos = this.history[t].position; walk = true;}
+							t++;
+						}
+						if (id == "forward") {
+							t = this.turn;
+							if (t > this.history.length -1) {return;}
+							else {pos = this.history[t].position; walk = true;}
+							t++;
+						}
 					}
 				}
 			}
@@ -776,8 +842,119 @@ export function Init() {
 		});
 		return po;
 	}
+
+	this.game_select = function (event) {
+		if (event.target.id == "game_list") {
+			event.target.classList.toggle('is_open');
+		}
+	}
+	this.click_on_save_dialog = (event) => {
+		if (event.target.id == "save_dialog") {
+			event.target.classList.toggle('is_open');
+			return;
+		}
+		if (event.target.id == 'saves') {
+			return;
+		}
+	}
+
+	this.save_party = (event) => {
+		if (typeof event != "undefined") {event.preventDefault();}
+		let party = this.game_name.value;
+		console.log(party);
+		party = party.trim().toLowerCase();
+		let party2 = '';
+		if (party.length > 0) {
+			for(var i = 0; i < party.length; i++) {
+				if ('qwertyuiopasdfghjklzxcvbnm_1234567890.,-()'.indexOf(party[i], 0) > 0) {
+					party2 = party2 + party[i];
+				}
+			}
+			party2.trim().replace(/ /gi, '_');
+			this.save_dialog.classList.toggle('is_open');
+			this.game_name.value = '';
+			let d = new Date();
+			this.archive[party2] = {
+				'history': this.history,
+				'date': d.getFullYear() + '_' + d.getMonth() + '_' + d.getDate(),
+			}
+			localStorage.setItem('archive', JSON.stringify(this.archive));
+		}
+		console.log(party2);
+		this.load_archive();
+	}
+	this.find_move = (p, wh) => {
+		let pos = [], w = true, am = [], p1 = [];
+		if (typeof p == "undefined") {
+			p1 = this.field.slice();
+			w = this.turn % 2 == 0;
+		} else {
+			w = wh;
+			p1 = p;
+		}
+		let copy_a = function(pp) {
+			let pp0 = [];
+			pp.forEach((xi, i0) => {
+				pp0.push([]);
+				xi.forEach((yi, i1) => {
+					pp0[i0][i1] = {
+						'value': yi.value,
+						'bridge': yi.bridge.slice(),
+						'allow': yi.allow,
+					}
+				});
+			});
+			return pp0;
+		}
+		pos = copy_a(p1);
+		am = this.get_allow_moves(pos, !w);
+		let pw = copy_a(pos);
+		let max_score = 0;
+		let best = [];
+		let mv = w ? 1 : 2;
+		am[1].forEach ((m) => {
+			if (pw[m[0][0]][m[0][1]] == mv && pw[m[1][0]][m[1][1]] == mv) {
+				pw[m[0][0]][m[0][1]].bridge = [m[1][0], m[1][1]];
+				console.log('bridge in searcg best move',[m[1][0], m[1][1]]);
+			} else {
+				pw[m[0][0]][m[0][1]].value = mv;
+				pw[m[1][0]][m[1][1]].value = mv;
+			}
+			let fi_arr = this.fi(pw, w);
+			let score = this.score(fi_arr, pw, w);
+			if (!(score < max_score)) {
+				max_score = score;
+				best.push([[m[0][0], m[0][1]], [m[1][0], m[1][1]], max_score]);
+				best.forEach((b, bi) => {if (b[2] < max_score) { best.splice(bi, 1);}});
+			}
+			pw = copy_a(pos);
+		});
+		console.log(max_score);
+		return best;
+	}
 	
 	this.btn_new.addEventListener('click', this.load_position);
 	this.back.addEventListener('click', this.load_position);
 	this.forward.addEventListener('click', this.load_position);
+	this.save.addEventListener('click', () => {
+		this.save_dialog.classList.toggle('is_open');
+	});
+	this.load.addEventListener('click', () => {
+		this.game_list.classList.toggle('is_open');
+	});
+	this.game_list.addEventListener('click', this.game_select);
+	this.save_dialog.addEventListener('click', this.click_on_save_dialog)
+	this.close_modal.forEach((item) => {item.addEventListener('click', (event) => {
+		event.target.parentElement.parentElement.classList.toggle('is_open');
+	});});
+	this.saveas.addEventListener('click', this.save_party);
+	
+	
+	document.addEventListener('keypress', (event) => {
+		if (this.save_dialog.classList.contains("is_open")) {return;}
+		if( '123456789'.indexOf(event.key) > -1) {
+			let fm = this.find_move();
+			console.log(fm);
+		}
+	});
 }

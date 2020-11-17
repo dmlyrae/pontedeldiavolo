@@ -58,6 +58,39 @@
 										0
 									</div>
 								</div>
+								<div class = "row save_load" >
+									<div class = "col">
+										<button class="btn_n" id = "save">Save</button>
+									</div>
+									<div class = "col">
+										<button class="btn_n" id  = "load">Load</button>
+									</div>
+								</div>
+							</div>
+							<div class="modal" id="save_dialog">
+								<div class= "modal-dialog-1 modal-dialog-reload-1">
+									<button class="close_modal">&times;</button>
+										<form id="save_form">
+											<fieldset class="modal-body">
+												<legend class="modal-title">Save as:</legend>
+												<label class="label-save">
+													<input id="game_name" type="text">
+												</label>
+											</fieldset>
+											<div class="modal-footer">
+												<div class="footer-buttons">
+													<button class="btn_n" type="submit">Save</button>
+												</div>
+											</div>
+										</form>
+								</div>
+
+							</div>
+                            <div class="modal" id="game_list">
+								<div class= "modal-dialog-1 modal-dialog-reload-1 list">
+									<button class="close_modal">&times;</button>
+									<legend class="modal-title">Select game:</legend>
+								</div>
 							</div>
 						</main>
 			</div>

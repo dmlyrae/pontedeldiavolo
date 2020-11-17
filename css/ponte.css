@@ -123,3 +123,55 @@
 	border-top-right-radius: 6px;
 	border-bottom-right-radius: 6px;
 }
+
+/* ========================== MODAL
+================================ */
+.modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    z-index: 999;
+}
+
+.modal-dialog-1 {
+	max-width: 780px;
+	min-width: 360px;
+    width: 95%;
+    background: #ffffff;
+    border-radius: 5px;
+    margin: auto;
+	padding: 20px 10px 0 10px
+}
+
+.modal-dialog-reload-1 {
+    width: auto;
+    position: relative;
+}
+
+.is_open {
+    display: flex;
+}
+.save_load {
+	padding-top: 5px;
+}
+.close_modal {
+    font-size: 36px;
+    border: none;
+    background-color: transparent;
+    position: absolute;
+    top: 10px;
+	right: 20px;
+	z-index: 1001;
+}
+.date {
+}
+.remove_icon {
+	color: red;
+}
+.div_in_list {
+	cursor: pointer;
+}
