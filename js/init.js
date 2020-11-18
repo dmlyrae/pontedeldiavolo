@@ -94,6 +94,7 @@ export function Init() {
 						this.moves_block.insertBefore(item.button, this.base_move);
 					});
 					this.load_position(this.turn - 1);
+					this.game_name.value = id;
 				}
 				this.game_list.classList.toggle('is_open');
 			})
@@ -627,25 +628,25 @@ export function Init() {
 				'turn': this.turn,
 				'button': this.base_move.cloneNode(false),
 		}
-			this.field.forEach ((xf) => {
-				let cyu = [];
-				xf.forEach ((yf) => {
-					cyu.push({
-						'value': yf.value,
-						'bridge': yf.bridge,
-						'allow': yf.allow,
-					});
+		this.field.forEach ((xf) => {
+			let cyu = [];
+			xf.forEach ((yf) => {
+				cyu.push({
+					'value': yf.value,
+					'bridge': yf.bridge,
+					'allow': yf.allow,
 				});
-				this.history[this.turn].position.push(cyu);
 			});
-			this.history[this.turn].button.innerHTML = (this.turn + 1) + ". " + 'abcdefjklmn'[this.selected_cells[0][0]] +
-				(1 + +this.selected_cells[0][1]) + " " + 'abcdefjklmn'[this.selected_cells[1][0]] + (1 + +this.selected_cells[1][1]);
-			let t = this.turn;
-			this.history[this.turn].button.id = this.turn;
-			this.history[this.turn]['button_innerHTML'] = this.history[this.turn].button.innerHTML;
-			this.history[this.turn]['button_id'] = t;
-			this.history[this.turn].button.addEventListener('click', this.load_position);
-			this.moves_block.insertBefore(this.history[this.turn].button, this.base_move);
+			this.history[this.turn].position.push(cyu);
+		});
+		this.history[this.turn].button.innerHTML = (this.turn + 1) + ". " + 'abcdefjklmn'[this.selected_cells[0][0]] +
+			(1 + +this.selected_cells[0][1]) + " " + 'abcdefjklmn'[this.selected_cells[1][0]] + (1 + +this.selected_cells[1][1]);
+		let t = this.turn;
+		this.history[this.turn].button.id = this.turn;
+		this.history[this.turn]['button_innerHTML'] = this.history[this.turn].button.innerHTML;
+		this.history[this.turn]['button_id'] = t;
+		this.history[this.turn].button.addEventListener('click', this.load_position);
+		this.moves_block.insertBefore(this.history[this.turn].button, this.base_move);
 
 		this.turn++;
 
@@ -816,8 +817,9 @@ export function Init() {
 		this.field = this.set_impassable(this.field, this.islands);
 		this.refresh_allow();
 		let wh = 0 == this.turn % 2;
-		let a = this.get_allow_moves(this.field, !wh);
+		let a = this.get_allow_moves(this.field, wh);
 		this.allow_moves = a[0];
+		this.selected_cells = [[-1, -1], [-1, -1]];
 	}
 
 	this.set_impassable = function (p, is) {
@@ -883,15 +885,9 @@ export function Init() {
 		}
 		this.load_archive();
 	}
-	this.find_move = (p, wh) => {
-		let pos = [], w = true, am = [], p1 = [];
-		if (typeof p == "undefined") {
-			p1 = this.field.slice();
-			w = this.turn % 2 == 0;
-		} else {
-			w = wh;
-			p1 = p;
-		}
+	this.find_move = (p, dep) => {
+		let depth = +dep;
+		let w = this.turn % 2 == 0;
 		let copy_a = function(pp) {
 			let pp0 = [];
 			pp.forEach((xi, i0) => {
@@ -906,32 +902,35 @@ export function Init() {
 			});
 			return pp0;
 		}
-		pos = copy_a(p1);
-		am = this.get_allow_moves(pos, w, 'find move');
-		let pw = copy_a(pos);
-		let max_score = 0;
-		let best = [];
-		let mv = w ? 1 : 2;
-		am[1].forEach ((m) => {
-			if (pw[m[0][0]][m[0][1]].value == mv && pw[m[1][0]][m[1][1]].value == mv) {
-				pw[m[0][0]][m[0][1]].bridge = [m[1][0], m[1][1]];
-				pw[m[1][0]][m[1][1]].bridge = [m[0][0], m[0][1]];
-			} else {
-				pw[m[0][0]][m[0][1]].value = mv;
-				pw[m[1][0]][m[1][1]].value = mv;
-			}
-			let fi_arr = this.fi(pw, w);
-			pw = this.set_impassable(pw, fi_arr);
-			let score = this.score(fi_arr, pw, w);
-			if (!(score < max_score)) {
-				max_score = score;
-				best.push([[m[0][0], m[0][1]], [m[1][0], m[1][1]], max_score]);
-				best.forEach((b, bi) => {if (b[2] < max_score) { best.splice(bi, 1);}});
-			}
-			pw = copy_a(pos);
-		});
-		console.log(max_score);
-		return best;
+		let find_dog = function (position, turn, depth, previous_score, minmax, t, copy_a_) {
+			let pw = copy_a_(position); // work position
+			let w = turn % 2 == 1;
+			let mv = w ? 1 : 2; //merge value
+			let current_allow_moves = t.get_allow_moves(pw, w);
+			depth--;
+			current_allow_moves[1].forEach ((m) => {
+				if (pw[m[0][0]][m[0][1]].value == mv && pw[m[1][0]][m[1][1]].value == mv) {
+					pw[m[0][0]][m[0][1]].bridge = [m[1][0], m[1][1]];
+					pw[m[1][0]][m[1][1]].bridge = [m[0][0], m[0][1]];
+				} else {
+					pw[m[0][0]][m[0][1]].value = mv;
+					pw[m[1][0]][m[1][1]].value = mv;
+				}
+				let current_islands = t.fi(pw, w);
+				pw = t.set_impassable(pw, current_islands);
+				let current_score = t.score(current_islands, pw, w);
+				m[2] = previous_score - current_score ;
+				if (w) m[2] = 0 - m[2];
+				if (depth > 0) {
+					let d = depth;
+					let mm = minmax;
+					m[3] = find_dog(pw, turn + 1, d, current_score, mm, t, copy_a_);
+				}
+			});
+			return current_allow_moves;
+		} 
+		let result = find_dog(p, this.turn, 2, 0, 0, this, copy_a);
+		console.log(result);
 	}
 	
 	this.btn_new.addEventListener('click', this.load_position);
@@ -954,7 +953,7 @@ export function Init() {
 	document.addEventListener('keypress', (event) => {
 		if (this.save_dialog.classList.contains("is_open")) {return;}
 		if( '123456789'.indexOf(event.key) > -1) {
-			let fm = this.find_move();
+			let fm = this.find_move(this.field, event.key);
 		}
 	});
 }
